@@ -121,9 +121,9 @@ class PandaAI(object):
         return x, y
 
 
-class KittyAI(object):
+class KittyAI2(object):
     def __init__(self):
-        self.face_icon = "😺"
+        self.face_icon = "😺2"
         
         # ゲーム段階に応じた評価表
         self.early_game_table = [
@@ -154,7 +154,7 @@ class KittyAI(object):
         ]
 
     def face(self):
-        return "🐱"
+        return "🐱2"
 
     def evaluate_board(self, board, stone, game_stage):
         # 適切な評価表を選択
