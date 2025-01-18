@@ -407,5 +407,5 @@ def run_othello(blackai=None, whiteai=None, board=None):
 
 
 
-run_othello(KittyAI(), PandaAI())  # KittyAI vs PandaAI
+#run_othello(KittyAI(), PandaAI())  # KittyAI vs PandaAI
 #run_othello(PandaAI(), KittyAI())  # PandaAI vs KittyAI
