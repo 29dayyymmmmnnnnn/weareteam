@@ -111,149 +111,40 @@ def move_stone(board, stone, x, y):
     return moves
 
 
-class PandaAI(object):
+class hiyokoAI(object):
 
     def face(self):
-        return "🐼"
+        return "🐣"
 
     def place(self, board, stone):
-        x, y = random_place(board, stone)
-        return x, y
-
-
-class KittyAI(object):
-    def __init__(self):
-        self.face_icon = "😺"
-        
-        # ゲーム段階に応じた評価表
-        self.early_game_table = [
-            [100, -20, 10, 10, -20, 100],
-            [-20, -50,  0,  0, -50, -20],
-            [ 10,   0,  5,  5,   0,  10],
-            [ 10,   0,  5,  5,   0,  10],
-            [-20, -50,  0,  0, -50, -20],
-            [100, -20, 10, 10, -20, 100],
-        ]
-
-        self.mid_game_table = [
-            [100, -20, 10, 10, -20, 100],
-            [-20, -30,  0,  0, -30, -20],
-            [ 10,   0,  1,  1,   0,  10],
-            [ 10,   0,  1,  1,   0,  10],
-            [-20, -30,  0,  0, -30, -20],
-            [100, -20, 10, 10, -20, 100],
-        ]
-
-        self.late_game_table = [
-            [ 1,  1,  1,  1,  1,  1],
-            [ 1,  1,  1,  1,  1,  1],
-            [ 1,  1,  1,  1,  1,  1],
-            [ 1,  1,  1,  1,  1,  1],
-            [ 1,  1,  1,  1,  1,  1],
-            [ 1,  1,  1,  1,  1,  1],
-        ]
-
-    def face(self):
-        return "🐱"
-
-    def evaluate_board(self, board, stone, game_stage):
-        # 適切な評価表を選択
-        if game_stage < 20:
-            table = self.early_game_table
-        elif game_stage < 40:
-            table = self.mid_game_table
-        else:
-            table = self.late_game_table
-
-        score = 0
-        for y in range(len(board)):
-            for x in range(len(board[0])):
-                if board[y][x] == stone:
-                    score += table[y][x]
-                elif board[y][x] == 3 - stone:  # 相手の石
-                    score -= table[y][x]
-
-        # 角を取る評価
+        # 角の位置
         corners = [(0, 0), (0, 5), (5, 0), (5, 5)]
-        for x, y in corners:
-            if board[y][x] == stone:
-                score += 500  # 角を取ったら非常に高い評価
-            elif board[y][x] == 3 - stone:
-                score -= 500  # 相手が角を取ったら非常に低い評価
+        valid_moves = []
 
-        # 安定した石（ひっくり返されにくい石）の評価
-        stable_stones = [(0, 0), (0, 1), (1, 0), (1, 1), (4, 4), (4, 5), (5, 4), (5, 5)]
-        for x, y in stable_stones:
-            if board[y][x] == stone:
-                score += 200  # 安定した石は高評価
-            elif board[y][x] == 3 - stone:
-                score -= 200  # 相手の安定した石は低評価
-
-        return score
-
-    def minimax(self, board, stone, depth, alpha, beta, maximizing, game_stage):
-        # 終了条件
-        if depth == 0 or not can_place(board, stone):
-            return self.evaluate_board(board, stone, game_stage), None
-
-        best_move = None
-        if maximizing:
-            max_eval = float('-inf')
-            for y in range(len(board)):
-                for x in range(len(board[0])):
-                    if can_place_x_y(board, stone, x, y):
-                        new_board = copy(board)
-                        move_stone(new_board, stone, x, y)
-                        eval_score, _ = self.minimax(new_board, 3 - stone, depth - 1, alpha, beta, False, game_stage + 1)
-                        if eval_score > max_eval:
-                            max_eval = eval_score
-                            best_move = (x, y)
-                        alpha = max(alpha, eval_score)
-                        if beta <= alpha:
-                            break  # 剪定
-            return max_eval, best_move
-        else:
-            min_eval = float('inf')
-            for y in range(len(board)):
-                for x in range(len(board[0])):
-                    if can_place_x_y(board, stone, x, y):
-                        new_board = copy(board)
-                        move_stone(new_board, stone, x, y)
-                        eval_score, _ = self.minimax(new_board, 3 - stone, depth - 1, alpha, beta, True, game_stage + 1)
-                        if eval_score < min_eval:
-                            min_eval = eval_score
-                            best_move = (x, y)
-                        beta = min(beta, eval_score)
-                        if beta <= alpha:
-                            break  # 剪定
-            return min_eval, best_move
-
-    def place(self, board, stone):
-        # 初期値としてalpha=-∞, beta=∞を設定
-        alpha = float('-inf')
-        beta = float('inf')
-
-        # minimaxを呼び出し
-        _, move = self.minimax(board, stone, depth=4, alpha=alpha, beta=beta, maximizing=True, game_stage=sum(row.count(0) for row in board))
-
-        if move:
-            return move
-        else:
-            return random_place(board, stone)  # 手がない場合はランダム
-
-
-
-
-
-    def evaluate_board_with_weights(self, board, weights):
-        score = 0
+        # 有効な手をすべて調べる
         for y in range(len(board)):
             for x in range(len(board[0])):
-                if board[y][x] == BLACK:
-                    score += weights[y][x]
-                elif board[y][x] == WHITE:
-                    score -= weights[y][x]
-        return score
+                if can_place_x_y(board, stone, x, y):
+                    valid_moves.append((x, y))
+
+        # 角が取れる場合は優先して選ぶ
+        for move in valid_moves:
+            if move in corners:
+                return move
+
+        # 角が取れない場合は評価関数を使って選ぶ
+        def evaluate(move):
+            x, y = move
+            # 角に近い位置や、相手にとって有利な位置を避ける
+            if (x, y) in [(0, 1), (1, 0), (1, 1), (0, 4), (1, 4), (1, 5), (4, 0), (4, 1), (5, 1), (4, 4), (4, 5), (5, 4)]:
+                return -10  # マイナスのスコアを付ける
+            return sum([1 for dx, dy in [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
+                        if 0 <= x + dx < len(board[0]) and 0 <= y + dy < len(board) and board[y + dy][x + dx] == stone])
+
+        # 評価が最も高い手を選ぶ
+        best_move = max(valid_moves, key=evaluate)
+        return best_move
+
 
 
 def draw_board(canvas, board):
@@ -404,8 +295,3 @@ def run_othello(blackai=None, whiteai=None, board=None):
     else:
         print('引き分け')
     print(f'思考時間: 黒: {black_time:.5f}秒, 白: {white_time:.5f}秒')
-
-
-
-#run_othello(KittyAI(), PandaAI())  # KittyAI vs PandaAI
-#run_othello(PandaAI(), KittyAI())  # PandaAI vs KittyAI
