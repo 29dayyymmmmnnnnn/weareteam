@@ -1,0 +1,63 @@
+import numpy as np
+
+# ボードのサイズを6×6に設定
+BOARD_SIZE = 6
+
+# オセロ盤の評価マトリックス（6×6用、角が最も高い評価）
+EVALUATION_MATRIX = np.array([
+    [100, -20,  10,  10, -20, 100],
+    [-20, -50,  -2,  -2, -50, -20],
+    [10,   -2,  -1,  -1,  -2,  10],
+    [10,   -2,  -1,  -1,  -2,  10],
+    [-20, -50,  -2,  -2, -50, -20],
+    [100, -20,  10,  10, -20, 100]
+])
+
+def evaluate_board_antAI(board, player):
+    score = 0
+    for i in range(BOARD_SIZE):
+        for j in range(BOARD_SIZE):
+            if board[i][j] == player:
+                score += EVALUATION_MATRIX[i][j]
+    return score
+
+def minimax_antAI(board, depth, is_maximizing, alpha, beta, player, opponent):
+    if depth == 0 or is_game_over(board):
+        return evaluate_board_antAI(board, player)
+
+    if is_maximizing:
+        max_eval = float('-inf')
+        for move in get_valid_moves(board, player):
+            new_board = make_move(board, move, player)
+            eval = minimax_antAI(new_board, depth-1, False, alpha, beta, player, opponent)
+            max_eval = max(max_eval, eval)
+            alpha = max(alpha, eval)
+            if beta <= alpha:
+                break
+        return max_eval
+    else:
+        min_eval = float('inf')
+        for move in get_valid_moves(board, opponent):
+            new_board = make_move(board, move, opponent)
+            eval = minimax_antAI(new_board, depth-1, True, alpha, beta, player, opponent)
+            min_eval = min(min_eval, eval)
+            beta = min(beta, eval)
+            if beta <= alpha:
+                break
+        return min_eval
+
+def get_best_move_antAI(board, player):
+    opponent = 3 - player
+    best_move = None
+    best_value = float('-inf')
+
+    for move in get_valid_moves(board, player):
+        new_board = make_move(board, move, player)
+        move_value = minimax_antAI(new_board, 3, False, float('-inf'), float('inf'), player, opponent)
+        if move_value > best_value:
+            best_value = move_value
+            best_move = move
+
+    return best_move
+
+# 他の補助関数は、get_valid_moves, make_move, is_game_overなどです。
